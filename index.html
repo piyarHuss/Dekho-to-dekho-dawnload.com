@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreatorVerse - Watch, Create & Earn</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 500: '#ff0050', 600: '#00f2ea' },
+                        dark: { 900: '#050505', 800: '#121212', 700: '#1f1f1f' }
+                    },
+                    animation: {
+                        'float': 'float 5s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shine': 'shine 2s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        shine: {
+                            '100%': { left: '125%' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; color: white; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s ease;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-10px);
+            border-color: rgba(255, 0, 80, 0.4);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(to right, #ff0050, #00f2ea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- REAL HUMAN EYE ANIMATION --- */
+        .human-eye {
+            position: relative;
+            width: 140px; height: 75px;
+            background: #f0f0f0;
+            border-radius: 85% 15%; 
+            transform: rotate(45deg); 
+            overflow: hidden;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.3), 0 0 20px rgba(0, 242, 234, 0.3);
+        }
+        .eye-inner {
+            transform: rotate(-45deg);
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .iris {
+            width: 55px; height: 55px;
+            background: radial-gradient(circle, #005c58 0%, #00f2ea 30%, #008a85 70%, #000 100%);
+            border-radius: 50%;
+            animation: eyeMove 6s infinite ease-in-out;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pupil { width: 22px; height: 22px; background: #000; border-radius: 50%; position: relative; }
+        .pupil::after { content: ''; position: absolute; top: 3px; left: 3px; width: 6px; height: 6px; background: white; border-radius: 50%; opacity: 0.7; }
+
+        .eyelid { position: absolute; left: -10%; width: 120%; height: 50%; background: #080808; z-index: 5; }
+        .eyelid.top { top: -51%; animation: blinkTop 4s infinite; }
+        .eyelid.bottom { bottom: -51%; animation: blinkBottom 4s infinite; }
+
+        @keyframes blinkTop { 0%, 90%, 100% { top: -51%; } 95% { top: 0%; } }
+        @keyframes blinkBottom { 0%, 90%, 100% { bottom: -51%; } 95% { bottom: 0%; } }
+        @keyframes eyeMove {
+            0%, 100% { transform: translate(0,0); }
+            20% { transform: translate(-12px, 6px); }
+            50% { transform: translate(12px, -6px); }
+            80% { transform: translate(0px, 10px); }
+        }
+
+        /* Button Shine Effect */
+        .btn-shine {
+            position: relative; overflow: hidden;
+        }
+        .btn-shine::after {
+            content: ''; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%;
+            background: rgba(255,255,255,0.3); transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -60%; }
+            20% { left: 120%; }
+            100% { left: 120%; }
+        }
+
+        .phone-frame {
+            border: 10px solid #222; border-radius: 35px; overflow: hidden;
+            position: relative; background: #000; width: 280px; height: 560px;
+            margin: 0 auto; box-shadow: 0 0 50px rgba(0, 242, 234, 0.15);
+        }
+    </style>
+</head>
+<body class="antialiased font-sans">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 w-full z-50 glass-card border-x-0 border-t-0" data-aos="fade-down">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 hover:scale-110 transition">
+                <i class="fas fa-layer-group text-brand-500 text-2xl animate-pulse"></i>
+                <span class="text-xl font-black tracking-tight">Creator<span class="text-white">Verse</span></span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-sm font-bold text-gray-400">
+                <a href="#earn" class="hover:text-brand-500 transition">How to Earn</a>
+                <a href="#features" class="hover:text-white transition">Features</a>
+            </div>
+            <a href="#download" class="bg-white text-black px-5 py-2 rounded-full font-bold text-sm hover:bg-brand-500 hover:text-white transition transform active:scale-90">
+                Get App
+            </a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="relative pt-32 pb-20 overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-500/10 rounded-full blur-[100px] -z-10 animate-pulse-slow"></div>
+
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            <div class="text-center lg:text-left z-10">
+                <div class="inline-block px-3 py-1 mb-6 border border-brand-600/30 rounded-full bg-brand-600/5" data-aos="zoom-in">
+                    <span class="text-brand-600 text-xs font-bold uppercase tracking-widest">🔥 Highest Paying App 2026</span>
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6" data-aos="fade-right" data-aos-delay="200">
+                    Watch. Create.<br>
+                    <span class="text-gradient">Start Earning.</span>
+                </h1>
+                
+                <p class="text-gray-400 text-lg mb-8 max-w-lg mx-auto lg:mx-0" data-aos="fade-right" data-aos-delay="400">
+                    The ultimate platform where your time is money. Join millions of creators and earners worldwide.
+                </p>
+
+                <div id="download" class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="600">
+                    <!-- ANDROID BUTTON -->
+                    <a href="https://drive.google.com/uc?export=download&id=1jEKj5b8eYqFhwSQO5mCdYlz8joL5q3gu" class="btn-shine flex items-center justify-center bg-brand-500 text-white px-8 py-4 rounded-2xl shadow-lg shadow-brand-500/30 hover:scale-105 transition-all w-full sm:w-auto">
+                        <i class="fab fa-android text-2xl mr-3"></i>
+                        <div class="text-left">
+                            <div class="text-[10px] font-bold opacity-75 uppercase">Download for</div>
+                            <div class="text-lg font-black leading-none">Android APK</div>
+                        </div>
+                    </a>
+
+                    <!-- BROWSER BUTTON -->
+                    <a href="https://dekho-to-dekho.vercel.app/" target="_blank" class="flex items-center justify-center glass-card px-8 py-4 rounded-2xl border border-gray-700 hover:border-brand-600 transition-all w-full sm:w-auto">
+                        <i class="fas fa-globe text-xl mr-3 text-cyan-400"></i>
+                        <div class="text-left">
+                            <div class="text-[10px] font-bold opacity-75 uppercase">Open in</div>
+                            <div class="text-lg font-black leading-none">Browser</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- RIGHT: PHONE MOCKUP WITH CENTERED EYE -->
+            <div class="relative flex justify-center lg:justify-end animate-float" data-aos="zoom-in-left" data-aos-duration="1000">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="flex flex-col h-full items-center justify-center bg-[#080808] p-6 relative">
+                        
+                        <!-- HUMAN EYE COMPONENT -->
+                        <div class="human-eye">
+                            <div class="eyelid top"></div>
+                            <div class="eyelid bottom"></div>
+                            <div class="eye-inner">
+                                <div class="iris"><div class="pupil"></div></div>
+                            </div>
+                        </div>
+                        <p class="text-[10px] tracking-[6px] text-brand-600 font-bold mt-10 uppercase animate-pulse">Watching</p>
+
+                        <!-- Fake UI -->
+                        <div class="absolute bottom-6 w-full px-6">
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-yellow-500 animate-spin-slow"></div>
+                                <div class="h-2 w-20 bg-gray-800 rounded"></div>
+                            </div>
+                            <div class="flex justify-between text-gray-500">
+                                <i class="fas fa-heart text-brand-500"></i>
+                                <i class="fas fa-comment"></i>
+                                <i class="fas fa-share"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Reward Badge -->
+                <div class="absolute -top-6 -right-4 glass-card p-4 rounded-2xl animate-bounce shadow-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white"><i class="fas fa-dollar-sign"></i></div>
+                        <div>
+                            <p class="text-xs text-gray-500">Earned</p>
+                            <p class="font-black text-green-500">+$0.0005</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EARNING RATES -->
+    <section id="earn" class="py-20 bg-dark-900 border-y border-gray-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-black mb-4">Income <span class="text-gradient">Streams</span></h2>
+                <p class="text-gray-400">Choose your way to earn money instantly.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="100">
+                    <i class="fas fa-video text-brand-500 text-3xl mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Creator</h3>
+                    <div class="text-3xl font-black text-white">$0.30 <span class="text-sm text-gray-500">/ 1k Views</span></div>
+                </div>
+                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="300">
+                    <i class="fas fa-download text-cyan-400 text-3xl mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Seller</h3>
+                    <div class="text-3xl font-black text-white">$0.40 <span class="text-sm text-gray-500">/ 1k Downloads</span></div>
+                </div>
+                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="500">
+                    <i class="fas fa-eye text-green-500 text-3xl mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Viewer</h3>
+                    <div class="text-3xl font-black text-white">$0.0002 <span class="text-sm text-gray-500">/ Video</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WITHDRAWAL -->
+    <section id="features" class="py-20">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div data-aos="fade-right">
+                <h2 class="text-3xl font-black mb-6">Instant Payouts</h2>
+                <p class="text-gray-400 mb-8">Sabse fast payment aur sabse kam minimum withdrawal limit.</p>
+                <div class="flex flex-wrap gap-4">
+                    <span class="glass-card px-4 py-2 rounded-lg text-sm font-bold"><i class="fab fa-paypal mr-2 text-blue-500"></i> PayPal</span>
+                    <span class="glass-card px-4 py-2 rounded-lg text-sm font-bold"><i class="fas fa-university mr-2 text-green-500"></i> UPI</span>
+                    <span class="glass-card px-4 py-2 rounded-lg text-sm font-bold"><i class="fab fa-bitcoin mr-2 text-orange-500"></i> Crypto</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4" data-aos="zoom-in">
+                <div class="glass-card p-10 rounded-2xl text-center"><div class="text-4xl font-black text-brand-500">$1.00</div><div class="text-xs uppercase font-bold text-gray-500">Min Payout</div></div>
+                <div class="glass-card p-10 rounded-2xl text-center"><div class="text-4xl font-black text-green-500">24h</div><div class="text-xs uppercase font-bold text-gray-500">Processing</div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-12 bg-black border-t border-gray-900 text-center" data-aos="fade-up">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-center gap-2 mb-6">
+                <i class="fas fa-layer-group text-brand-500 text-2xl"></i>
+                <span class="text-xl font-black">CreatorVerse</span>
+            </div>
+            <p class="text-gray-600 text-xs tracking-widest uppercase font-bold">&copy; 2026 CreatorVerse Inc. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- AOS Script Initialization -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: false,
+            mirror: true
+        });
+    </script>
+
+</body>
+</html>
