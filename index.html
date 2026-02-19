@@ -1,304 +1,652 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://richinfo.co/richpartners/pops/js/richads-pu-ob.js" data-pubid="997172" data-siteid="387298" async data-cfasync="false"></script>
-    
+     <meta name="monetag" content="719857d6707de99242422aee5eec2981">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CreatorVerse - Watch, Create & Earn</title>
+    <title>AssetMaster - Pro Editor & Animations</title>
     
+    <!-- React & DOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Icons & Fonts -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
-    
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Fabric.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], cursive: ['Dancing Script', 'cursive'] },
                     colors: {
-                        brand: { 500: '#ff0050', 600: '#00f2ea' },
-                        dark: { 900: '#050505', 800: '#121212', 700: '#1f1f1f' }
-                    },
-                    animation: {
-                        'float': 'float 5s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'shine': 'shine 2s infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-15px)' },
-                        },
-                        shine: {
-                            '100%': { left: '125%' },
-                        }
+                        dark: '#0f172a',
+                        card: '#1e293b',
+                        accent: '#3b82f6',
+                        'accent-hover': '#2563eb',
+                        'editor-bg': '#09090b',
+                        'editor-panel': '#18181b',
+                        'editor-border': '#27272a',
+                        'header-blue': '#1a1f3d'
                     }
                 }
             }
         }
     </script>
+    
     <style>
-        body { background-color: #050505; color: white; overflow-x: hidden; scroll-behavior: smooth; }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.4s ease;
+        body { background-color: #0f172a; color: white; overflow-x: hidden; }
+        .masonry-grid { column-count: 2; column-gap: 1rem; }
+        @media (min-width: 768px) { .masonry-grid { column-count: 3; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 4; } }
+        .break-inside-avoid { break-inside: avoid; margin-bottom: 1rem; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+        .canvas-wrapper {
+            background-color: #18181b;
+            background-image: radial-gradient(#27272a 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-        .glass-card:hover {
-            background: rgba(255, 255, 255, 0.07);
-            transform: translateY(-10px);
-            border-color: rgba(255, 0, 80, 0.4);
-        }
-        
-        .text-gradient {
-            background: linear-gradient(to right, #ff0050, #00f2ea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* --- REAL HUMAN EYE ANIMATION --- */
-        .human-eye {
-            position: relative;
-            width: 140px; height: 75px;
-            background: #f0f0f0;
-            border-radius: 85% 15%; 
-            transform: rotate(45deg); 
-            overflow: hidden;
-            box-shadow: inset 0 0 25px rgba(0,0,0,0.3), 0 0 20px rgba(0, 242, 234, 0.3);
-        }
-        .eye-inner {
-            transform: rotate(-45deg);
-            width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
-        }
-        .iris {
-            width: 55px; height: 55px;
-            background: radial-gradient(circle, #005c58 0%, #00f2ea 30%, #008a85 70%, #000 100%);
-            border-radius: 50%;
-            animation: eyeMove 6s infinite ease-in-out;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .pupil { width: 22px; height: 22px; background: #000; border-radius: 50%; position: relative; }
-        .pupil::after { content: ''; position: absolute; top: 3px; left: 3px; width: 6px; height: 6px; background: white; border-radius: 50%; opacity: 0.7; }
-
-        .eyelid { position: absolute; left: -10%; width: 120%; height: 50%; background: #080808; z-index: 5; }
-        .eyelid.top { top: -51%; animation: blinkTop 4s infinite; }
-        .eyelid.bottom { bottom: -51%; animation: blinkBottom 4s infinite; }
-
-        @keyframes blinkTop { 0%, 90%, 100% { top: -51%; } 95% { top: 0%; } }
-        @keyframes blinkBottom { 0%, 90%, 100% { bottom: -51%; } 95% { bottom: 0%; } }
-        @keyframes eyeMove {
-            0%, 100% { transform: translate(0,0); }
-            20% { transform: translate(-12px, 6px); }
-            50% { transform: translate(12px, -6px); }
-            80% { transform: translate(0px, 10px); }
-        }
-
-        /* Button Shine Effect */
-        .btn-shine {
-            position: relative; overflow: hidden;
-        }
-        .btn-shine::after {
-            content: ''; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%;
-            background: rgba(255,255,255,0.3); transform: rotate(30deg);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% { left: -60%; }
-            20% { left: 120%; }
-            100% { left: 120%; }
-        }
-
-        .phone-frame {
-            border: 10px solid #222; border-radius: 35px; overflow: hidden;
-            position: relative; background: #000; width: 280px; height: 560px;
-            margin: 0 auto; box-shadow: 0 0 50px rgba(0, 242, 234, 0.15);
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
+ <meta name="monetag" content="268083484eca8fefe867f727d1062bdb">
+
 </head>
-<body class="antialiased font-sans">
+<body>
+    <div id="root"></div>
 
-    <!-- NAVBAR -->
-    <nav class="fixed top-0 w-full z-50 glass-card border-x-0 border-t-0" data-aos="fade-down">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2 hover:scale-110 transition">
-                <i class="fas fa-layer-group text-brand-500 text-2xl animate-pulse"></i>
-                <span class="text-xl font-black tracking-tight">Creator<span class="text-white">Verse</span></span>
-            </div>
-            <div class="hidden md:flex space-x-8 text-sm font-bold text-gray-400">
-                <a href="#earn" class="hover:text-brand-500 transition">How to Earn</a>
-                <a href="#features" class="hover:text-white transition">Features</a>
-            </div>
-            <a href="#download" class="bg-white text-black px-5 py-2 rounded-full font-bold text-sm hover:bg-brand-500 hover:text-white transition transform active:scale-90">
-                Get App
-            </a>
-        </div>
-    </nav>
+    <script type="text/babel">
+        // --- SUPABASE CONFIG ---
+        const SUPABASE_URL = "https://dukqydeoawbgzstejlsn.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_GzeOZBmGkpbG571VFb2d6A_WUaMY0UA";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <!-- HERO SECTION -->
-    <section class="relative pt-32 pb-20 overflow-hidden">
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-500/10 rounded-full blur-[100px] -z-10 animate-pulse-slow"></div>
+        const { useState, useEffect, useRef } = React;
 
-        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        // --- ICONS ---
+        const Icons = {
+            Search: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
+            Heart: ({ filled }) => <svg width="16" height="16" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className={filled ? "text-red-500" : ""}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>,
+            Download: () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+            Close: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            Edit: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.5l-3 9a2 2 0 0 0 2.5 2.5l9-3a2 2 0 0 0 .5-.5Z"/></svg>,
+            Type: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>,
+            Shapes: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>,
+            Overlay: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>,
+            Video: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>,
+            Layers: () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
+            Trash: () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+            Spinner: () => <svg className="animate-spin h-8 w-8 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
+            Loading: () => <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        };
+
+        // --- DIRECT SERVER DOWNLOAD FUNCTION ---
+        function forceDownload(url, title, setIsDownloading) {
+            if (setIsDownloading) setIsDownloading(true);
             
-            <div class="text-center lg:text-left z-10">
-                <div class="inline-block px-3 py-1 mb-6 border border-brand-600/30 rounded-full bg-brand-600/5" data-aos="zoom-in">
-                    <span class="text-brand-600 text-xs font-bold uppercase tracking-widest">🔥 Highest Paying App 2026</span>
+            setTimeout(() => {
+                try {
+                    const hasParams = url.includes('?');
+                    const downloadUrl = `${url}${hasParams ? '&' : '?'}download=`;
+                    
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    
+                    const extension = url.split('.').pop().split(/[?#]/)[0] || 'png';
+                    const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`;
+                    link.setAttribute('download', filename);
+                    // Force download in same context but browsers handle file downloads without navigation
+                    link.target = "_self"; 
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                } catch (error) {
+                    console.error("Download error:", error);
+                    alert("Download failed.");
+                } finally {
+                    if (setIsDownloading) setIsDownloading(false);
+                }
+            }, 100); 
+        }
+
+        // --- INTERNAL APP AD PAGE (SANDBOXED IFRAME - INSIDE APP) ---
+        function InternalAdPage({ onFinish, adSettings }) {
+            const [timeLeft, setTimeLeft] = useState(10); 
+            const [canSkip, setCanSkip] = useState(false);
+            const iframeRef = useRef(null);
+
+            useEffect(() => {
+                if (timeLeft > 0) {
+                    const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
+                    return () => clearTimeout(timer);
+                } else {
+                    setCanSkip(true);
+                }
+            }, [timeLeft]);
+
+            // Default fallback if DB is empty
+            const adUrl = adSettings?.linkUrl || 'https://omg10.com/4/10006720';
+
+            return (
+                <div className="fixed inset-0 z-[100] bg-black flex flex-col h-screen w-screen overflow-hidden">
+                    
+                    {/* Header Bar */}
+                    <div className="h-14 bg-gray-900 flex items-center justify-between px-6 shrink-0 shadow-xl z-20 border-b border-gray-700">
+                        <div className="text-white font-bold text-sm flex items-center gap-2">
+                            <span className="bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold uppercase">Ad</span>
+                            Sponsored Content
+                        </div>
+                        <div className="flex items-center gap-3">
+                             {!canSkip ? (
+                                <div className="bg-gray-800 text-gray-300 px-4 py-2 rounded-full text-xs font-mono">
+                                    Wait {timeLeft}s
+                                </div>
+                             ) : (
+                                <button 
+                                    onClick={onFinish}
+                                    className="bg-green-600 hover:bg-green-500 text-white text-xs px-6 py-2 rounded-full font-bold animate-bounce shadow-lg shadow-green-900/50 flex items-center gap-2"
+                                >
+                                    SKIP & DOWNLOAD <Icons.Download />
+                                </button>
+                             )}
+                        </div>
+                    </div>
+
+                    {/* The "Inside App" Ad Container */}
+                    <div className="flex-1 relative w-full h-full bg-white">
+                        {/* Loading Spinner underneath iframe */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 z-0 bg-gray-50">
+                            <Icons.Spinner />
+                            <p className="mt-4 text-sm font-medium text-gray-600">Loading Advertisement...</p>
+                            <p className="mt-2 text-xs text-gray-400 max-w-xs text-center">
+                                If the screen remains white, please wait for the timer to finish and click Skip.
+                            </p>
+                        </div>
+
+                        {/* 
+                            SANDBOX IFRAME 
+                            This keeps the Direct Link "Inside" the app.
+                            Note: Some networks block iframes. If white screen appears, user waits for Skip.
+                        */}
+                        <iframe 
+                            src={adUrl} 
+                            ref={iframeRef}
+                            className="absolute inset-0 w-full h-full z-10 border-0"
+                            sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+                            referrerPolicy="no-referrer"
+                        ></iframe>
+                    </div>
                 </div>
-                
-                <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6" data-aos="fade-right" data-aos-delay="200">
-                    Watch. Create.<br>
-                    <span class="text-gradient">Start Earning.</span>
-                </h1>
-                
-                <p class="text-gray-400 text-lg mb-8 max-w-lg mx-auto lg:mx-0" data-aos="fade-right" data-aos-delay="400">
-                    The ultimate platform where your time is money. Join millions of creators and earners worldwide.
-                </p>
+            );
+        }
 
-                <div id="download" class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="600">
-                    <!-- ANDROID BUTTON -->
-                    <a href="https://drive.google.com/uc?export=download&id=1jEKj5b8eYqFhwSQO5mCdYlz8joL5q3gu" class="btn-shine flex items-center justify-center bg-brand-500 text-white px-8 py-4 rounded-2xl shadow-lg shadow-brand-500/30 hover:scale-105 transition-all w-full sm:w-auto">
-                        <i class="fab fa-android text-2xl mr-3"></i>
-                        <div class="text-left">
-                            <div class="text-[10px] font-bold opacity-75 uppercase">Download for</div>
-                            <div class="text-lg font-black leading-none">Android APK</div>
-                        </div>
-                    </a>
+        // --- COMPONENTS ---
 
-                    <!-- BROWSER BUTTON -->
-                    <a href="https://dekho-to-dekho.vercel.app/" target="_blank" class="flex items-center justify-center glass-card px-8 py-4 rounded-2xl border border-gray-700 hover:border-brand-600 transition-all w-full sm:w-auto">
-                        <i class="fas fa-globe text-xl mr-3 text-cyan-400"></i>
-                        <div class="text-left">
-                            <div class="text-[10px] font-bold opacity-75 uppercase">Open in</div>
-                            <div class="text-lg font-black leading-none">Browser</div>
-                        </div>
-                    </a>
-                </div>
-            </div>
+        function AssetCard({ asset, onClick, onLike }) {
+            const handleLikeClick = (e) => {
+                e.stopPropagation();
+                onLike(asset);
+            };
 
-            <!-- RIGHT: PHONE MOCKUP WITH CENTERED EYE -->
-            <div class="relative flex justify-center lg:justify-end animate-float" data-aos="zoom-in-left" data-aos-duration="1000">
-                <div class="phone-frame">
-                    <div class="phone-notch"></div>
-                    <div class="flex flex-col h-full items-center justify-center bg-[#080808] p-6 relative">
-                        
-                        <!-- HUMAN EYE COMPONENT -->
-                        <div class="human-eye">
-                            <div class="eyelid top"></div>
-                            <div class="eyelid bottom"></div>
-                            <div class="eye-inner">
-                                <div class="iris"><div class="pupil"></div></div>
-                            </div>
-                        </div>
-                        <p class="text-[10px] tracking-[6px] text-brand-600 font-bold mt-10 uppercase animate-pulse">Watching</p>
+            const isAnimation = asset.type === 'Animation';
 
-                        <!-- Fake UI -->
-                        <div class="absolute bottom-6 w-full px-6">
-                            <div class="flex items-center gap-2 mb-4">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-yellow-500 animate-spin-slow"></div>
-                                <div class="h-2 w-20 bg-gray-800 rounded"></div>
-                            </div>
-                            <div class="flex justify-between text-gray-500">
-                                <i class="fas fa-heart text-brand-500"></i>
-                                <i class="fas fa-comment"></i>
-                                <i class="fas fa-share"></i>
+            return (
+                <div onClick={() => onClick(asset)} className="break-inside-avoid relative rounded-xl overflow-hidden cursor-pointer bg-card hover:ring-2 hover:ring-accent transition-all duration-300 group shadow-lg">
+                    {isAnimation ? (
+                        <video 
+                            src={asset.url} 
+                            className="w-full h-auto block object-contain bg-black" 
+                            autoPlay 
+                            loop 
+                            muted 
+                            playsInline 
+                        />
+                    ) : (
+                        <img 
+                            src={asset.url} 
+                            alt={asset.title} 
+                            className="w-full h-auto block object-cover transition-transform duration-500 group-hover:scale-105" 
+                            loading="lazy"
+                        />
+                    )}
+                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 pointer-events-none">
+                        <div className="pointer-events-auto">
+                            <p className="text-sm font-semibold truncate text-white drop-shadow-md">{asset.title}</p>
+                            <div className="flex justify-between items-center mt-1 text-xs text-gray-200">
+                                <button 
+                                    onClick={handleLikeClick} 
+                                    className="flex items-center gap-1 hover:text-red-400 transition-colors p-1 rounded bg-black/20 backdrop-blur-sm"
+                                >
+                                    <Icons.Heart filled={asset.likes > 0} /> 
+                                    {asset.likes}
+                                </button>
+                                <span className="flex items-center gap-1 bg-black/20 backdrop-blur-sm px-2 py-1 rounded"><Icons.Download /> {asset.downloads}</span>
                             </div>
                         </div>
                     </div>
                 </div>
+            );
+        }
 
-                <!-- Floating Reward Badge -->
-                <div class="absolute -top-6 -right-4 glass-card p-4 rounded-2xl animate-bounce shadow-2xl">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white"><i class="fas fa-dollar-sign"></i></div>
-                        <div>
-                            <p class="text-xs text-gray-500">Earned</p>
-                            <p class="font-black text-green-500">+$0.0005</p>
+        function AssetModal({ asset, onClose, onEdit, adSettings }) {
+            if (!asset) return null;
+            const isAnimation = asset.type === 'Animation';
+            const [isDownloading, setIsDownloading] = useState(false);
+            const [showAdPage, setShowAdPage] = useState(false);
+
+            const initiateDownload = () => {
+                // Show the internal Ad Page inside the app
+                setShowAdPage(true);
+            };
+
+            const handleAdFinished = () => {
+                // Close Ad Page
+                setShowAdPage(false);
+                // Update stats
+                supabaseClient.from('assets').update({ downloads: (asset.downloads || 0) + 1 }).eq('id', asset.id).then();
+                // Start Download
+                forceDownload(asset.url, asset.title, setIsDownloading);
+            };
+
+            return (
+                <>
+                    {/* Render AdPage ON TOP of everything (App ke andar) */}
+                    {showAdPage && <InternalAdPage onFinish={handleAdFinished} adSettings={adSettings} />}
+
+                    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200 ${showAdPage ? 'hidden' : ''}`}>
+                        <div className="bg-card w-full max-w-5xl h-[85vh] rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-gray-700">
+                            <div className="flex-1 bg-black relative flex items-center justify-center p-0 md:p-6 overflow-hidden">
+                                 {isAnimation ? (
+                                    <video 
+                                        src={asset.url} 
+                                        className="max-w-full max-h-full object-contain shadow-xl" 
+                                        controls 
+                                        autoPlay 
+                                        loop 
+                                        playsInline
+                                        crossOrigin="anonymous" 
+                                    />
+                                 ) : (
+                                    <img src={asset.url} className="max-w-full max-h-full object-contain shadow-xl" crossOrigin="anonymous" />
+                                 )}
+                                 <button onClick={onClose} className="absolute top-4 left-4 bg-black/50 p-2 rounded-full hover:bg-black/80 text-white md:hidden"><Icons.Close /></button>
+                            </div>
+                            <div className="w-full md:w-80 p-6 flex flex-col bg-card border-l border-gray-700 relative">
+                                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white hidden md:block"><Icons.Close /></button>
+                                <div className="mt-8 md:mt-0">
+                                    <span className="text-xs font-bold text-accent uppercase tracking-wider">{asset.type}</span>
+                                    <h2 className="text-2xl font-bold mt-2 leading-tight">{asset.title}</h2>
+                                    <p className="text-gray-400 text-sm mt-2">Free for commercial use.</p>
+                                </div>
+                                <div className="mt-auto space-y-3 pt-6">
+                                    <button 
+                                        onClick={initiateDownload} 
+                                        disabled={isDownloading}
+                                        className={`w-full bg-accent hover:bg-accent-hover text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${isDownloading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    >
+                                        {isDownloading ? <Icons.Loading /> : <Icons.Download />} 
+                                        {isDownloading ? 'Downloading...' : (isAnimation ? 'Download Video' : 'Free Download')}
+                                    </button>
+                                    
+                                    {!isAnimation && (
+                                        <button onClick={() => onEdit(asset)} className="w-full bg-transparent border border-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                            <Icons.Edit /> Edit in Browser
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // --- PRO EDITOR ---
+        function ProEditor({ asset, onClose, allAssets }) {
+            const [canvas, setCanvas] = useState(null);
+            const [activeTool, setActiveTool] = useState('elements'); 
+            const [selectedObject, setSelectedObject] = useState(null);
+            const [drawerWidth, setDrawerWidth] = useState(250); 
+            const isResizing = useRef(false);
+
+            useEffect(() => {
+                const initCanvas = new fabric.Canvas('editor-canvas', {
+                    width: 800,
+                    height: 600,
+                    backgroundColor: '#ffffff',
+                    preserveObjectStacking: true,
+                });
+
+                if (asset) {
+                    fabric.Image.fromURL(asset.url, (img) => {
+                        const scale = Math.min(600 / img.width, 500 / img.height);
+                        img.set({ scaleX: scale, scaleY: scale });
+                        initCanvas.centerObject(img);
+                        initCanvas.add(img);
+                        initCanvas.setActiveObject(img);
+                    }, { crossOrigin: 'anonymous' }); 
+                }
+
+                const updateSelection = () => setSelectedObject(initCanvas.getActiveObject());
+                initCanvas.on('selection:created', updateSelection);
+                initCanvas.on('selection:updated', updateSelection);
+                initCanvas.on('selection:cleared', () => setSelectedObject(null));
+                setCanvas(initCanvas);
+                
+                return () => initCanvas.dispose();
+            }, [asset]);
+
+            useEffect(() => {
+                const handleMove = (clientX) => {
+                    if (!isResizing.current) return;
+                    let newWidth = clientX - 64; 
+                    if (newWidth < 100) newWidth = 0; 
+                    if (newWidth > 100 && newWidth < 150) newWidth = 150;
+                    if (newWidth > 500) newWidth = 500;
+                    setDrawerWidth(newWidth);
+                };
+                const onMouseMove = (e) => handleMove(e.clientX);
+                const onTouchMove = (e) => handleMove(e.touches[0].clientX);
+                const stopResize = () => { isResizing.current = false; };
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('mouseup', stopResize);
+                window.addEventListener('touchmove', onTouchMove);
+                window.addEventListener('touchend', stopResize);
+                return () => {
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', stopResize);
+                    window.removeEventListener('touchmove', onTouchMove);
+                    window.removeEventListener('touchend', stopResize);
+                };
+            }, []);
+
+            const startResizing = () => { isResizing.current = true; };
+
+            const addText = (type) => {
+                if(!canvas) return;
+                const options = { left: 100, top: 100, fill: '#000000', fontFamily: 'Inter' };
+                if (type === 'heading') { options.fontSize = 48; options.fontWeight = 'bold'; options.text = 'Heading'; }
+                else if (type === 'sub') { options.fontSize = 32; options.fontWeight = '600'; options.text = 'Subheading'; }
+                else { options.fontSize = 18; options.text = 'Body text'; }
+                const text = new fabric.Textbox(options.text, options);
+                canvas.add(text);
+                canvas.setActiveObject(text);
+            };
+
+            const addShape = (shape) => {
+                const common = { left: 150, top: 150, fill: '#3b82f6' };
+                let obj = shape === 'rect' ? new fabric.Rect({ ...common, width: 100, height: 100 }) : new fabric.Circle({ ...common, radius: 50 });
+                canvas.add(obj); canvas.setActiveObject(obj);
+            };
+
+            const addImage = (url) => {
+                fabric.Image.fromURL(url, (img) => {
+                    img.scaleToWidth(200);
+                    canvas.add(img);
+                    canvas.centerObject(img);
+                    canvas.setActiveObject(img);
+                }, { crossOrigin: 'anonymous' });
+            };
+
+            const download = () => {
+                const dataURL = canvas.toDataURL({ format: 'png', quality: 1, multiplier: 2 });
+                const link = document.createElement('a');
+                link.download = 'design-pro.png';
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            
+            const changeColor = (e) => {
+                if(!selectedObject) return;
+                selectedObject.set('fill', e.target.value);
+                canvas.requestRenderAll();
+            };
+
+            const elementsAssets = allAssets.filter(a => ['Elements', 'Sticker', 'Emoji', 'Icon'].includes(a.type));
+            const overlayAssets = allAssets.filter(a => ['Overlay', 'Background'].includes(a.type));
+            let animationAssets = allAssets.filter(a => a.type === 'Animation');
+
+            const ToolBtn = ({ icon: Icon, label, id }) => (
+                <button onClick={() => { setActiveTool(id); if(drawerWidth === 0) setDrawerWidth(250); }} className={`w-full flex flex-col items-center justify-center py-4 gap-1 transition-colors ${activeTool === id ? 'bg-editor-panel text-accent border-l-2 border-accent' : 'text-gray-400 hover:text-white'}`}>
+                    <Icon />
+                    <span className="text-[10px] font-medium tracking-wide">{label}</span>
+                </button>
+            );
+
+            return (
+                <div className="fixed inset-0 z-50 flex flex-col bg-editor-bg text-gray-200">
+                    <header className="h-14 bg-editor-panel border-b border-editor-border flex items-center justify-between px-4 shrink-0">
+                        <div className="flex items-center gap-4">
+                            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-md transition text-gray-400 hover:text-white"><Icons.Close /></button>
+                            <h1 className="text-sm font-bold text-white hidden md:block">Pro Editor <span className="text-gray-500 font-normal">| {asset.title}</span></h1>
+                        </div>
+                        <div className="flex-1 flex justify-center items-center gap-4">
+                            {selectedObject ? (
+                                <>
+                                    <input type="color" className="w-8 h-8 rounded cursor-pointer bg-transparent" onChange={changeColor} />
+                                    <button onClick={() => {selectedObject.bringForward(); canvas.requestRenderAll()}} className="p-2 hover:bg-white/10"><Icons.Layers /></button>
+                                    <button onClick={() => {canvas.remove(selectedObject); setSelectedObject(null)}} className="p-2 hover:bg-red-500/20 text-red-400"><Icons.Trash /></button>
+                                </>
+                            ) : <span className="text-xs text-gray-500">Select Object</span>}
+                        </div>
+                        <button onClick={download} className="bg-accent hover:bg-accent-hover text-white text-xs font-bold px-4 py-2 rounded-md">Export PNG</button>
+                    </header>
+
+                    <div className="flex-1 flex overflow-hidden relative">
+                        <div className="w-16 bg-editor-panel border-r border-editor-border flex flex-col z-20 shrink-0 h-full">
+                            <ToolBtn icon={Icons.Shapes} label="Elements" id="elements" />
+                            <ToolBtn icon={Icons.Type} label="Text" id="text" />
+                            <ToolBtn icon={Icons.Overlay} label="Overlays" id="overlays" />
+                            <ToolBtn icon={Icons.Video} label="Animation" id="animations" />
+                        </div>
+
+                        <div style={{ width: `${drawerWidth}px` }} className={`bg-editor-panel flex flex-col z-10 overflow-hidden shrink-0 ${drawerWidth === 0 ? 'border-none' : 'border-r border-editor-border'}`}>
+                            <div className="p-4 overflow-y-auto flex-1 custom-scrollbar space-y-6">
+                                {activeTool === 'elements' && (
+                                    <>
+                                        <h3 className="text-sm font-bold mb-2 text-gray-300">Basic Shapes</h3>
+                                        <div className="grid grid-cols-2 gap-2 mb-6">
+                                            <button onClick={() => addShape('rect')} className="bg-editor-border hover:bg-accent/20 p-3 rounded flex flex-col items-center gap-1"><div className="w-6 h-4 border border-white"></div><span className="text-[10px]">Rect</span></button>
+                                            <button onClick={() => addShape('circle')} className="bg-editor-border hover:bg-accent/20 p-3 rounded flex flex-col items-center gap-1"><div className="w-4 h-4 border border-white rounded-full"></div><span className="text-[10px]">Circle</span></button>
+                                        </div>
+                                        <h3 className="text-sm font-bold mb-2 text-gray-300">Graphics & Stickers</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {elementsAssets.map(a => (
+                                                <div key={a.id} className="bg-gray-800 rounded p-1 cursor-pointer hover:ring-1 hover:ring-accent" onClick={() => addImage(a.url)}>
+                                                    <img src={a.url} className="w-full h-auto object-contain" referrerPolicy="no-referrer"/>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                                {activeTool === 'text' && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-bold mb-2 text-gray-300">Add Text</h3>
+                                        <button onClick={() => addText('heading')} className="w-full text-left bg-editor-border/50 hover:bg-editor-border p-3 rounded-lg"><h1 className="text-2xl font-bold">Heading</h1></button>
+                                        <button onClick={() => addText('sub')} className="w-full text-left bg-editor-border/50 hover:bg-editor-border p-3 rounded-lg"><h2 className="text-lg font-semibold">Subheading</h2></button>
+                                        <button onClick={() => addText('body')} className="w-full text-left bg-editor-border/50 hover:bg-editor-border p-3 rounded-lg"><p className="text-sm">Body text</p></button>
+                                    </div>
+                                )}
+                                {activeTool === 'overlays' && (
+                                    <>
+                                        <h3 className="text-sm font-bold mb-2 text-gray-300">Library</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {overlayAssets.map(a => (
+                                                <div key={a.id} className="group relative aspect-square rounded overflow-hidden cursor-pointer bg-gray-800" onClick={() => addImage(a.url)}>
+                                                    <img src={a.url} className="w-full h-full object-cover opacity-80 hover:opacity-100" referrerPolicy="no-referrer" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                                {activeTool === 'animations' && (
+                                    <>
+                                        <h3 className="text-sm font-bold mb-2 text-gray-300">Video Backgrounds</h3>
+                                        <div className="flex flex-col gap-4">
+                                            {animationAssets.map(a => (
+                                                <div key={a.id} className="group relative rounded-lg overflow-hidden bg-black border border-gray-700">
+                                                    <video 
+                                                        src={a.url} 
+                                                        className="w-full h-auto object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
+                                                        autoPlay loop muted playsInline
+                                                    ></video>
+                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
+                                                        <button 
+                                                            onClick={() => forceDownload(a.url, a.title)} 
+                                                            className="bg-accent hover:bg-accent-hover text-white p-2 rounded-full flex items-center gap-1 shadow-lg transform scale-90 group-hover:scale-100 transition-transform"
+                                                        >
+                                                            <Icons.Download />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        <div onMouseDown={startResizing} onTouchStart={startResizing} className="w-5 -ml-2.5 z-50 cursor-col-resize flex flex-col justify-center items-center group touch-none select-none h-full relative hover:bg-accent/10">
+                            <div className="w-[2px] h-full bg-editor-border group-hover:bg-accent"></div>
+                        </div>
+
+                        <div className="flex-1 canvas-wrapper relative flex items-center justify-center overflow-auto p-4 md:p-12">
+                            <div className="shadow-2xl border border-gray-700 bg-white">
+                                <canvas id="editor-canvas"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
+            );
+        }
 
-    <!-- EARNING RATES -->
-    <section id="earn" class="py-20 bg-dark-900 border-y border-gray-800">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16" data-aos="fade-up">
-                <h2 class="text-4xl md:text-5xl font-black mb-4">Income <span class="text-gradient">Streams</span></h2>
-                <p class="text-gray-400">Choose your way to earn money instantly.</p>
-            </div>
+        // --- MAIN APP ---
+        function App() {
+            const [view, setView] = useState('home'); 
+            const [selectedAsset, setSelectedAsset] = useState(null); 
+            const [editingAsset, setEditingAsset] = useState(null); 
+            const [search, setSearch] = useState('');
+            const [category, setCategory] = useState('All');
+            const [assets, setAssets] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [adSettings, setAdSettings] = useState(null);
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="100">
-                    <i class="fas fa-video text-brand-500 text-3xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Creator</h3>
-                    <div class="text-3xl font-black text-white">$0.30 <span class="text-sm text-gray-500">/ 1k Views</span></div>
-                </div>
-                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="300">
-                    <i class="fas fa-download text-cyan-400 text-3xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Seller</h3>
-                    <div class="text-3xl font-black text-white">$0.40 <span class="text-sm text-gray-500">/ 1k Downloads</span></div>
-                </div>
-                <div class="glass-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="500">
-                    <i class="fas fa-eye text-green-500 text-3xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Viewer</h3>
-                    <div class="text-3xl font-black text-white">$0.0002 <span class="text-sm text-gray-500">/ Video</span></div>
-                </div>
-            </div>
-        </div>
-    </section>
+            useEffect(() => {
+                fetchAssets();
+                fetchAdSettings();
 
-    <!-- WITHDRAWAL -->
-    <section id="features" class="py-20">
-        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div data-aos="fade-right">
-                <h2 class="text-3xl font-black mb-6">Instant Payouts</h2>
-                <p class="text-gray-400 mb-8">Sabse fast payment aur sabse kam minimum withdrawal limit.</p>
-                <div class="flex flex-wrap gap-4">
-                    <span class="glass-card px-4 py-2 rounded-lg text-sm font-bold"><i class="fab fa-paypal mr-2 text-blue-500"></i> PayPal</span>
-                    <span class="glass-card px-4 py-2 rounded-lg text-sm font-bold"><i class="fas fa-university mr-2 text-green-500"></i> UPI</span>
-                    <span class="glass-card px-4 py-2 rounded-lg text-sm font-bold"><i class="fab fa-bitcoin mr-2 text-orange-500"></i> Crypto</span>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4" data-aos="zoom-in">
-                <div class="glass-card p-10 rounded-2xl text-center"><div class="text-4xl font-black text-brand-500">$1.00</div><div class="text-xs uppercase font-bold text-gray-500">Min Payout</div></div>
-                <div class="glass-card p-10 rounded-2xl text-center"><div class="text-4xl font-black text-green-500">24h</div><div class="text-xs uppercase font-bold text-gray-500">Processing</div></div>
-            </div>
-        </div>
-    </section>
+                const channel = supabaseClient.channel('public:assets')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchAssets)
+                    .subscribe();
+                return () => supabaseClient.removeChannel(channel);
+            }, []);
 
-    <!-- FOOTER -->
-    <footer class="py-12 bg-black border-t border-gray-900 text-center" data-aos="fade-up">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-center gap-2 mb-6">
-                <i class="fas fa-layer-group text-brand-500 text-2xl"></i>
-                <span class="text-xl font-black">CreatorVerse</span>
-            </div>
-            <p class="text-gray-600 text-xs tracking-widest uppercase font-bold">&copy; 2026 CreatorVerse Inc. All Rights Reserved.</p>
-        </div>
-    </footer>
+            async function fetchAssets() {
+                const { data, error } = await supabaseClient.from('assets').select('*').order('created_at', { ascending: false });
+                if (!error) { setAssets(data); setLoading(false); }
+            }
 
-    <!-- AOS Script Initialization -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        AOS.init({
-            duration: 800,
-            once: false,
-            mirror: true
-        });
+            async function fetchAdSettings() {
+                const { data } = await supabaseClient.from('app_settings').select('*').eq('id', 1).single();
+                // Map 'ad_link_url' from Admin Panel to 'linkUrl' in User App
+                if (data) setAdSettings({ linkUrl: data.ad_link_url });
+            }
+            
+            async function handleLike(asset) {
+                if(!asset) return;
+                const newCount = (asset.likes || 0) + 1;
+                setAssets(prev => prev.map(a => a.id === asset.id ? { ...a, likes: newCount } : a));
+                await supabaseClient.from('assets').update({ likes: newCount }).eq('id', asset.id);
+            }
+
+            const homeCategories = ['All', 'Thumbnail', 'Animation', 'Background', 'Sticker', 'Icon', 'Emoji'];
+            
+            const filteredAssets = assets.filter(a => {
+                const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
+                const matchesCat = category === 'All' ? true : a.type.toLowerCase() === category.toLowerCase();
+                return matchesSearch && matchesCat;
+            });
+
+            return (
+                <>
+                    {view === 'home' && (
+                        <div className="min-h-screen pb-20">
+                            <nav className="sticky top-0 z-30 bg-card/80 backdrop-blur border-b border-gray-700 px-6 h-16 flex items-center justify-between">
+                                <div className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">A</div>
+                                    AssetMaster
+                                </div>
+                                <div className="hidden md:flex gap-6 text-sm font-medium text-gray-300">
+                                    <a href="#" className="hover:text-white">Assets</a>
+                                </div>
+                            </nav>
+
+                            <div className="py-20 px-6 text-center max-w-4xl mx-auto">
+                                <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
+                                    Free Assets for Modern Creators
+                                </h1>
+                                <div className="relative max-w-xl mx-auto">
+                                    <input type="text" placeholder="Search assets..." className="w-full h-14 pl-12 pr-4 rounded-full bg-card border border-gray-600 focus:ring-1 focus:ring-accent outline-none text-white shadow-lg" value={search} onChange={(e) => setSearch(e.target.value)} />
+                                    <div className="absolute left-4 top-4 text-gray-400"><Icons.Search /></div>
+                                </div>
+                            </div>
+
+                            <div className="px-6 mb-8 overflow-x-auto no-scrollbar">
+                                <div className="flex justify-center gap-2 min-w-max">
+                                    {homeCategories.map(cat => (
+                                        <button key={cat} onClick={() => setCategory(cat)} className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${category === cat ? 'bg-accent text-white' : 'bg-card text-gray-400 hover:text-white hover:bg-gray-700'}`}>{cat}</button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="container mx-auto px-6">
+                                {loading ? (
+                                    <div className="flex justify-center items-center py-20"><Icons.Spinner /></div>
+                                ) : (
+                                    <div className="masonry-grid">
+                                        {filteredAssets.map(asset => (
+                                            <AssetCard key={asset.id} asset={asset} onClick={setSelectedAsset} onLike={handleLike} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <AssetModal 
+                        asset={selectedAsset} 
+                        onClose={() => setSelectedAsset(null)} 
+                        onEdit={(asset) => { setSelectedAsset(null); setEditingAsset(asset); setView('editor'); }} 
+                        adSettings={adSettings}
+                    />
+                    
+                    {view === 'editor' && editingAsset && (
+                        <ProEditor asset={editingAsset} onClose={() => { setEditingAsset(null); setView('home'); }} allAssets={assets} />
+                    )}
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
-
 </body>
 </html>
