@@ -92,13 +92,13 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;f
 
 .studio-bottom-panel{position:absolute;bottom:max(16px,env(safe-area-inset-bottom));left:0;right:0;padding:0 20px;display:flex;align-items:flex-end;justify-content:space-between;z-index:35;pointer-events:none}
 
-/* Big Metallic Beveled Play Button (Exact Screenshot Match) */
+/* Big Metallic Beveled Play Button */
 .play-btn-huge{pointer-events:auto;position:relative;width:240px;max-width:68vw;height:84px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#3b82f6 0%,#1d4ed8 50%,#172554 100%);border:3px solid #eab308;box-shadow:0 12px 35px rgba(37,99,235,.45),inset 0 2px 3px rgba(255,255,255,.7),0 0 24px rgba(234,179,8,.4);border-radius:24px;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;clip-path:polygon(18px 0%,calc(100% - 18px) 0%,100% 50%,calc(100% - 18px) 100%,18px 100%,0% 50%)}
 .play-btn-huge:active{transform:scale(.95) translateY(3px);box-shadow:0 4px 14px rgba(37,99,235,.3)}
 .play-btn-huge .txt-main{font-size:36px;font-weight:900;letter-spacing:3px;color:#fde047;text-shadow:0 2px 0 #713f12,0 0 20px rgba(250,204,21,.6);line-height:1}
 .play-btn-huge .txt-sub{font-size:9.5px;font-weight:800;letter-spacing:1.8px;color:#e0f2fe;text-transform:uppercase;margin-top:2px}
 
-/* Sound Toggle Module (Bottom Left) */
+/* Sound Toggle Module */
 .sound-toggle-pod{pointer-events:auto;display:flex;background:linear-gradient(180deg,#1e293b 0%,#090d1a 100%);border:1.5px solid rgba(255,255,255,.18);border-radius:18px;padding:3px;box-shadow:0 8px 24px rgba(0,0,0,.6);gap:3px}
 .sound-seg-btn{width:46px;height:42px;border-radius:14px;border:0;background:transparent;color:#94a3b8;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease}
 .sound-seg-btn.active{background:linear-gradient(180deg,#0ea5e9 0%,#0284c7 100%);color:#fff;box-shadow:0 0 16px rgba(14,165,233,.6);border:1px solid rgba(255,255,255,.4)}
@@ -176,7 +176,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;f
   </div>
 </div>
 
-<!-- START SCREEN (HIGHWAY RUSH SHOWROOM STYLE WITH TELEGRAM USER PROFILE) -->
+<!-- START SCREEN (HIGHWAY RUSH SHOWROOM STYLE) -->
 <div id="start-screen" class="overlay" style="background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none;padding:0;overflow:hidden">
   
   <!-- TOP STUDIO STATUS BAR -->
@@ -392,7 +392,7 @@ if(window.Telegram && window.Telegram.WebApp) {
   } catch(e){}
 }
 
-// Identity Setup (Direct from Telegram without manual popup)
+// Identity Setup
 if(tgUser) {
   var fullName = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
   currentRacerName = fullName.trim() || tgUser.username || ('TG_' + tgUser.id);
@@ -437,10 +437,16 @@ function updateAtomixStatusBadge() {
   }
 }
 
-// ⭐ SMART MULTI-TOKEN & DIRECT TARGET BEST-SCORE CALLBACK ⭐
+// ⭐ SMART MULTI-TOKEN REALTIME BEST-SCORE CALLBACK (AUTO-TRIGGERS LIVE) ⭐
 var atomixRewardInProgress = false;
+var localClaimedTargets = new Set();
+
 async function checkAndSendAtomixRewards(scoreReached, coinsCollected) {
-  if(!atomixUid || atomixRewardInProgress) return;
+  if(!atomixUid) {
+    console.warn("Atomix: Playing as guest. No UID provided.");
+    return;
+  }
+  if(atomixRewardInProgress) return;
 
   try {
     atomixRewardInProgress = true;
@@ -454,8 +460,8 @@ async function checkAndSendAtomixRewards(scoreReached, coinsCollected) {
     }
 
     // 2. Identify Selected Token & Milestone Condition Type
-    var rewardToken = taskData.rewardToken || "DOGS"; // DOGS, BONK, TRX, FLOKI, PEPE
-    var milestoneType = taskData.milestoneType || "score"; // "score", "coins", "level"
+    var rewardToken = taskData.rewardToken || "DOGS"; 
+    var milestoneType = taskData.milestoneType || "score"; 
 
     var tokenKeyMap = {
       "DOGS": "dogsBalance",
@@ -478,18 +484,22 @@ async function checkAndSendAtomixRewards(scoreReached, coinsCollected) {
     var completedList = userTasks[ATOMIX_TASK_ID] || [];
     var currentTokenBal = Number(userData[tokenKey] || 0);
 
-    // Player ka evaluated value (Best Score ya Coins)
+    // Normalize completed list to Numbers to avoid type mismatches
+    var completedNumbers = completedList.map(Number);
+    localClaimedTargets.forEach(function(t){ completedNumbers.push(Number(t)); });
+
     var playerValue = (milestoneType === "coins") ? Number(coinsCollected || 0) : Number(scoreReached || 0);
 
     var totalNewTokens = 0;
     var newlyUnlocked = [];
 
-    // 4. Milestones check karo (Direct target matching without formula)
+    // 4. Milestones check karo (Direct match)
     taskData.levels.forEach(function(lvlObj) {
       var targetValue = Number(lvlObj.lvl ?? lvlObj.target);
 
-      if(playerValue >= targetValue && !completedList.includes(targetValue)) {
-        completedList.push(targetValue);
+      if(playerValue >= targetValue && !completedNumbers.includes(targetValue)) {
+        completedNumbers.push(targetValue);
+        localClaimedTargets.add(targetValue);
         var rew = Number(lvlObj.reward || 0);
         totalNewTokens += rew;
         newlyUnlocked.push({ target: targetValue, rew: rew });
@@ -499,7 +509,7 @@ async function checkAndSendAtomixRewards(scoreReached, coinsCollected) {
     // 5. Agar naya milestone reach hua, toh balance add karo!
     if(newlyUnlocked.length > 0 && totalNewTokens > 0) {
       var newBal = currentTokenBal + totalNewTokens;
-      userTasks[ATOMIX_TASK_ID] = completedList;
+      userTasks[ATOMIX_TASK_ID] = completedNumbers;
 
       var tx = Array.isArray(userData.tx) ? userData.tx : [];
       newlyUnlocked.forEach(function(item) {
@@ -511,6 +521,7 @@ async function checkAndSendAtomixRewards(scoreReached, coinsCollected) {
           d: Date.now()
         });
 
+        // Live in-game celebration float
         showFloat(`🎉 ${label} Reached! +${item.rew} ${rewardToken}!`, '#00ff88');
       });
 
@@ -878,10 +889,9 @@ function updateEngine(){
   
   if(state==='menu'){
    carAudio.volume = 0.35;
-   carAudio.playbackRate = 0.85; // Low idle purr in showroom
+   carAudio.playbackRate = 0.85; 
   } else if(state==='playing' || state==='countdown'){
    carAudio.volume = 0.85;
-   // Speed dynamically increases playback speed/pitch: from 0.85x up to 2.1x!
    var targetRate = 0.85 + (speed / 250) * 0.95 + (nitroActive ? 0.3 : 0);
    carAudio.playbackRate = Math.min(2.1, Math.max(0.75, targetRate));
   }
@@ -927,14 +937,14 @@ function buildWorld(){
  scene.add(worldEnvironmentGroup);
  scene.add(showroomGroup);
 
- // ⭐ 3D SHOWROOM STUDIO PEDESTAL (MATCHING SCREENSHOT) ⭐
+ // ⭐ 3D SHOWROOM STUDIO PEDESTAL ⭐
  var platGeo = new THREE.CylinderGeometry(4.6, 4.8, 0.45, 64);
  var platMat = new THREE.MeshStandardMaterial({color:0x151b28, roughness:0.25, metalness:0.85});
  showroomPlatform = new THREE.Mesh(platGeo, platMat);
  showroomPlatform.position.set(0, -0.22, 0);
  showroomGroup.add(showroomPlatform);
 
- // Platform glowing cyan/golden rim
+ // Platform glowing cyan rim
  var rimGeo = new THREE.TorusGeometry(4.7, 0.06, 16, 64);
  var rimMat = new THREE.MeshBasicMaterial({color:0x00e5ff});
  var rim = new THREE.Mesh(rimGeo, rimMat);
@@ -1661,7 +1671,7 @@ function doCrash(){
   topSpeed:Math.round(topSpeed)
  });
 
- // ⭐ Best Score aur Total Coins bhej rahe hain reward check karne ke liye:
+ // Final Check on Crash
  checkAndSendAtomixRewards(bestScoreAchieved, totalCoins);
 
  setTimeout(function(){
@@ -1681,7 +1691,10 @@ function doCrash(){
 }
 
 function goHome(){
- playClick();state='menu';resetGame();
+ playClick();
+ var bestScoreAchieved = Math.max(best, Math.floor(score));
+ checkAndSendAtomixRewards(bestScoreAchieved, totalCoins);
+ state='menu';resetGame();
  saveDataToFirebase();
  $('gameover-screen').classList.add('hidden');$('pause-screen').classList.add('hidden');hud.classList.add('hidden');
  $('mobile-controls').classList.add('hidden');$('start-screen').style.display='flex';
@@ -1859,6 +1872,9 @@ function updateHUD(){
  speedVal.style.color=speed>200?'#ff5555':speed>140?'#ffd700':'#67e8f9';
 }
 
+// Real-time check throttle
+var lastRealtimeRewardCheck = 0;
+
 function animate(){
  requestAnimationFrame(animate);
  var dt=Math.min(clock.getDelta(),0.05);
@@ -2018,6 +2034,13 @@ function animate(){
    bestVal.textContent=best;
    if($('menu-best')) $('menu-best').textContent=best.toLocaleString();
   }
+
+  // ⭐ LIVE REALTIME MILESTONE CHECK (NO NEED TO WAIT FOR CRASH!) ⭐
+  if(Date.now() - lastRealtimeRewardCheck > 1200){
+    lastRealtimeRewardCheck = Date.now();
+    var currentAchieved = Math.max(best, Math.floor(score));
+    checkAndSendAtomixRewards(currentAchieved, totalCoins);
+  }
  }
 
  // ⭐ SHOWROOM TURNTABLE / MENU 3D CAMERA ⭐
@@ -2025,12 +2048,10 @@ function animate(){
   if(showroomGroup) showroomGroup.visible = true;
   scene.fog.near = 150; scene.fog.far = 500;
   
-  // Turntable and car rotate smoothly 360 degrees
   if(showroomPlatform) showroomPlatform.rotation.y += dt * 0.35;
   playerCar.position.set(0, 0.05, 0);
   playerCar.rotation.y += dt * 0.35;
   
-  // Showroom studio camera angle
   camera.fov = 48;
   camera.updateProjectionMatrix();
   camera.position.set(-3.2, 1.75, 5.2);
