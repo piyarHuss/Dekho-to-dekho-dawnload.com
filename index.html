@@ -825,11 +825,15 @@ function logGameEvent(name,params){
 }
 
 // =========================================================================
-// ⭐ 100% PURE CAR.SOUND.MP3 ENGINE (ALL SYNTH BUZZ REMOVED) ⭐
+// ⭐ 100% PURE AUDIO ENGINE (CAR + DYNAMIC NITRO.MP3) ⭐
 // =========================================================================
 var carAudio = new Audio('car.sound.mp3');
 carAudio.loop = true;
 carAudio.preload = 'auto';
+
+var nitroAudio = new Audio('nitro.mp3');
+nitroAudio.loop = true;
+nitroAudio.preload = 'auto';
 
 var audioCtx = null;
 
@@ -876,14 +880,14 @@ function playClick(){tone(600,0.07,'square',0.15);}
 function playUpgradeS(){tone(523,0.1,'triangle',0.2);tone(659,0.12,'triangle',0.2,null,0.08);tone(783,0.25,'triangle',0.22,null,0.16);}
 function playNear(){noiseBurst(0.25,0.4,'bandpass',800,4000);}
 function playCrash(){noiseBurst(0.7,0.7,'lowpass',900,100);tone(160,0.6,'sawtooth',0.45,35);}
-function playNitroS(){tone(180,0.5,'sawtooth',0.18,900);noiseBurst(0.5,0.2,'highpass',1500,5000);}
 
-// ⭐ Dynamic Engine Revving using ONLY car.sound.mp3 ⭐
+// ⭐ Dynamic Engine Revving & Nitro Audio ⭐
 function updateEngine(){
  if(!carAudio) return;
 
  if(muted || state==='paused' || state==='gameover'){
   if(!carAudio.paused) carAudio.pause();
+  if(nitroAudio && !nitroAudio.paused){nitroAudio.pause(); nitroAudio.currentTime=0;}
  } else {
   if(carAudio.paused) carAudio.play().catch(function(){});
   
@@ -894,6 +898,19 @@ function updateEngine(){
    carAudio.volume = 0.85;
    var targetRate = 0.85 + (speed / 250) * 0.95 + (nitroActive ? 0.3 : 0);
    carAudio.playbackRate = Math.min(2.1, Math.max(0.75, targetRate));
+  }
+ }
+
+ // nitroAudio control: plays while nitroActive, pauses instantly when released
+ if(nitroActive && !muted && state==='playing'){
+  if(nitroAudio.paused){
+   nitroAudio.currentTime = 0;
+   nitroAudio.play().catch(function(){});
+  }
+ } else {
+  if(!nitroAudio.paused){
+   nitroAudio.pause();
+   nitroAudio.currentTime = 0;
   }
  }
 }
@@ -1529,6 +1546,10 @@ function setMuted(m){
   if(muted) carAudio.pause();
   else if(state==='playing'||state==='menu') carAudio.play().catch(function(){});
  }
+ if(nitroAudio){
+  nitroAudio.muted = muted;
+  if(muted && !nitroAudio.paused) nitroAudio.pause();
+ }
 }
 
 function renderUpgradeBars(){
@@ -1710,6 +1731,7 @@ function togglePause(){
   $('pause-screen').classList.remove('hidden');
   playClick();
   if(carAudio) carAudio.pause();
+  if(nitroAudio && !nitroAudio.paused){nitroAudio.pause(); nitroAudio.currentTime=0;}
  }
  else if(state==='paused'){
   state='playing';
@@ -1729,9 +1751,8 @@ function bindInput(){
   if(e.code==='KeyF')toggleFS();
   if(e.code==='KeyR')flipCarOrientation();
   if(e.code==='Enter'){if(state==='menu')startGame();else if(state==='gameover'&&!$('gameover-screen').classList.contains('hidden'))startGame();}
-  if(e.code==='Space'&&state==='playing'&&nitro>10&&!nitro._s){playNitroS();nitro._s=true;}
  });
- window.addEventListener('keyup',function(e){keys[e.code]=false;if(e.code==='Space')nitro._s=false;});
+ window.addEventListener('keyup',function(e){keys[e.code]=false;});
  
  var nitroBtn=$('t-nitro');
  if(nitroBtn){
@@ -1739,7 +1760,6 @@ function bindInput(){
    e.preventDefault();e.stopPropagation();
    initAudio();touchNitro=true;
    nitroBtn.classList.add('on');
-   if(nitro>10&&state==='playing')playNitroS();
   };
   var nitroOff=function(e){
    if(e){e.preventDefault();e.stopPropagation();}
@@ -2041,7 +2061,7 @@ function animate(){
     var currentAchieved = Math.max(best, Math.floor(score));
     checkAndSendAtomixRewards(currentAchieved, totalCoins);
   }
- }
+}
 
  // ⭐ SHOWROOM TURNTABLE / MENU 3D CAMERA ⭐
  if(state === 'menu'){
